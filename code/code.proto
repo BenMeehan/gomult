@@ -1,0 +1,16 @@
+syntax= "proto3";
+
+package code;
+
+message Input {
+    string lang=1;
+    string body=2;
+}
+
+message Output {
+    string result=1;
+}
+
+service CompileService {
+    rpc Compile(Input) returns (Output) {}
+}
