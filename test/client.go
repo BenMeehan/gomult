@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/benmeehan111/gomult/compile"
+	"github.com/benmeehan/gomult/compile"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )

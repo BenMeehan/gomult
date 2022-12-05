@@ -6,7 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/benmeehan111/gomult/compile"
+	"github.com/benmeehan/gomult/compile"
 
 	"google.golang.org/grpc"
 )

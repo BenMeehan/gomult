@@ -1,4 +1,4 @@
-module github.com/benmeehan111/gomult
+module github.com/benmeehan/gomult
 
 go 1.19
 
