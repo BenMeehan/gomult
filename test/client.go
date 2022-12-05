@@ -3,10 +3,9 @@ package main
 import (
 	"log"
 
+	"github.com/benmeehan111/gomult/compile"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-
-	"benmeehan111/go-multicompiler/code"
 )
 
 func main() {
@@ -18,9 +17,9 @@ func main() {
 	}
 	defer conn.Close()
 
-	c := code.NewCompileServiceClient(conn)
+	c := compile.NewCompileServiceClient(conn)
 
-	response, err := c.Compile(context.Background(), &code.Input{Lang: "python3", Body: `print("hello")`})
+	response, err := c.Compile(context.Background(), &compile.Input{Lang: "python3", Body: `print("hello")`})
 	if err != nil {
 		log.Fatalf("Error when calling SayHello: %s", err)
 	}
