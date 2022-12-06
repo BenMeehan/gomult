@@ -19,7 +19,13 @@ func main() {
 
 	c := compile.NewCompileServiceClient(conn)
 
-	response, err := c.Compile(context.Background(), &compile.Input{Lang: "python3", Body: `print("hello")`})
+	s := `public class Simple{  
+		public static void main(String args[]){  
+		 System.out.println("Hello Java");  
+		}  
+	}`
+
+	response, err := c.Compile(context.Background(), &compile.Input{Lang: "java17", Body: s})
 	if err != nil {
 		log.Fatalf("Error when calling SayHello: %s", err)
 	}
