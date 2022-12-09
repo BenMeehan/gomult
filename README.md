@@ -21,6 +21,7 @@ This project is in early stage and currently supports
 - NodeJS 12
 - Java 17 (code must have atleast 1 public class)
 - Golang 1.19.3
+- C 
 
 with support for more languages to be added soon. 
 

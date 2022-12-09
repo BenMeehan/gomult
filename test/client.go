@@ -19,19 +19,15 @@ func main() {
 
 	c := compile.NewCompileServiceClient(conn)
 
-	s := `package main
+	s := `#include <stdio.h>
 
-	import (
-		"fmt"
-		"github.com/google/uuid"
-	)
+	int main() {
 	
-	func main() {
-		id := uuid.New()
-		fmt.Println(id.String())
+	   printf("Hello world!\n");
+	   return 1; 
 	}`
 
-	response, err := c.Compile(context.Background(), &compile.Input{Lang: "go", Body: s})
+	response, err := c.Compile(context.Background(), &compile.Input{Lang: "c", Body: s})
 	if err != nil {
 		log.Fatalf("Error when calling SayHello: %s", err)
 	}

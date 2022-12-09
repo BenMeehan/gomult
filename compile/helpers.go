@@ -1,6 +1,7 @@
 package compile
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -47,6 +48,18 @@ func compileGolang(code string) string {
 	id := uuid.New().String()
 	fname := createFile(id, "go", code)
 	out, err := exec.Command("go", "run", fname).CombinedOutput()
+	handleError(err)
+	err = os.Remove(fname)
+	handleError(err)
+	return string(out[:])
+}
+
+func compileC(code string) string {
+	id := uuid.New().String()
+	fname := createFile(id, "c", code)
+	_, err := exec.Command("gcc", fname, "-o", fmt.Sprintf("/tmp/%s", id)).Output()
+	handleError(err)
+	out, err := exec.Command("bash", "-c", fmt.Sprintf("/tmp/%s", id)).CombinedOutput()
 	handleError(err)
 	err = os.Remove(fname)
 	handleError(err)
