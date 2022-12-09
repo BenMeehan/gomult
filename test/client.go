@@ -19,13 +19,19 @@ func main() {
 
 	c := compile.NewCompileServiceClient(conn)
 
-	s := `public class Simple{  
-		public static void main(String args[]){  
-		 System.out.println("Hello Java");  
-		}  
+	s := `package main
+
+	import (
+		"fmt"
+		"github.com/google/uuid"
+	)
+	
+	func main() {
+		id := uuid.New()
+		fmt.Println(id.String())
 	}`
 
-	response, err := c.Compile(context.Background(), &compile.Input{Lang: "java17", Body: s})
+	response, err := c.Compile(context.Background(), &compile.Input{Lang: "go", Body: s})
 	if err != nil {
 		log.Fatalf("Error when calling SayHello: %s", err)
 	}

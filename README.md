@@ -19,7 +19,7 @@ This project is in early stage and currently supports
 - Python 3
 - Python 2.7
 - NodeJS 12
-- Java 17
+- Java 17 (code must have atleast 1 public class)
 - Golang
 
 with support for more languages to be added soon. 

@@ -19,6 +19,8 @@ func (c *Compiler) Compile(ctx context.Context, in *Input) (*Output, error) {
 	case "java17":
 		class := getMainClass(in.Body)
 		res = compileJava17(in.Body, class)
+	case "go":
+		res = compileGolang(in.Body)
 	}
 	return &Output{Result: res}, nil
 }

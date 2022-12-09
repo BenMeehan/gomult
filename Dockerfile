@@ -8,9 +8,9 @@ RUN apt update
 # OR 
 # Add new languages
 # RUN apt install -y python3  --- python3 is already installed in bullseye distro
-RUN apt install -y python
-RUN apt install -y nodejs
-RUN apt install -y openjdk-17-jdk 
+# RUN apt install -y python
+# RUN apt install -y nodejs
+# RUN apt install -y openjdk-17-jdk 
 
 COPY . .
 
