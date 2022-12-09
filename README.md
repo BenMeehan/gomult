@@ -1,7 +1,7 @@
 
 # GOMULT
 
-Gomult is a bunch of compilers for most popilar languages in a dockerfile, providing a gRPC interface and written in golang. 
+Gomult is a bunch of compilers for the most popular languages in a dockerfile, providing a gRPC interface and written in golang. 
 
 
 ## How it works
