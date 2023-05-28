@@ -82,7 +82,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	defer os.Remove(tmpOpFile.Name()) // Clean up the temporary file
 
 	// Compile the code using GCC (assuming GCC is installed)
-	outputFile := "/tmp" + tmpOpFile.Name()
+	outputFile := tmpOpFile.Name()
 	cmd := exec.Command("gcc", tmpFile.Name(), "-o", outputFile)
 
 	compilerOutput, err := cmd.CombinedOutput()
