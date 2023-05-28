@@ -16,13 +16,13 @@ import (
 // Maximum allowed code size in bytes
 const MaxCodeSize = 1024 * 1024 // 1 MB
 
-// Restricted user and group ID
+// Restricted user and group ID - always 1000 for docker unless explicit
 const RestrictedUserID = 1000
 const RestrictedGroupID = 1000
 
 func main() {
 	http.HandleFunc("/compile", handleCompile)
-	fmt.Println("Server listening on port 8080...")
+	fmt.Println("C Server listening on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -73,7 +73,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a temporary file to store the output
-	tmpOpFile, err := ioutil.TempFile("", "output-*.c")
+	tmpOpFile, err := ioutil.TempFile("", "output-*")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Internal server error", err)
