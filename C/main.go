@@ -80,6 +80,15 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Close the temporary output file
+	err = tmpOpFile.Close()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Internal server error", err)
+		log.Printf("Failed to close output temporary file: %v", err)
+		return
+	}
+
 	// Compile the code using GCC (assuming GCC is installed)
 	outputFile := tmpOpFile.Name()
 	cmd := exec.Command("gcc", tmpFile.Name(), "-o", outputFile)
