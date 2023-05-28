@@ -79,7 +79,6 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Failed to create output temporary file: %v\n", err)
 		return
 	}
-	defer os.Remove(tmpOpFile.Name()) // Clean up the temporary file
 
 	// Compile the code using GCC (assuming GCC is installed)
 	outputFile := tmpOpFile.Name()
@@ -118,6 +117,8 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("Execution error: %s", err)
 		}
+
+		defer os.Remove(tmpOpFile.Name()) // Clean up the temporary file
 
 		// Send the execution output through the channel
 		outputChannel <- cmdOutput
