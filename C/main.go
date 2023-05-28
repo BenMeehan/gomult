@@ -118,11 +118,12 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Execution error: %s", err)
 		}
 
-		defer os.Remove(tmpOpFile.Name()) // Clean up the temporary file
-
 		// Send the execution output through the channel
 		outputChannel <- cmdOutput
 	}()
+
+	// Remove the temporary output file after the Goroutine completes
+	defer os.Remove(tmpOpFile.Name())
 
 	select {
 	case <-ctx.Done():
