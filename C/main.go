@@ -31,14 +31,16 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	code, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Failed to read code from request body: %v", err)
+		fmt.Fprintf(w, "Error occurred during parsing of the code", err)
+		log.Printf("Failed to read code from request body: %v", err)
 		return
 	}
 
 	// Check if the code size exceeds the maximum allowed size
 	if len(code) > MaxCodeSize {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Code size exceeds the maximum limit of %d bytes", MaxCodeSize)
+		fmt.Fprintf(w, "Code size too big", err)
+		log.Printf("Code size exceeds the maximum limit of %d bytes", MaxCodeSize)
 		return
 	}
 
@@ -46,7 +48,8 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	tmpFile, err := ioutil.TempFile("", "code-*.c")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Failed to create temporary file: %v", err)
+		fmt.Fprintf(w, "Internal server error", err)
+		log.Printf("Failed to create temporary file: %v", err)
 		return
 	}
 	defer os.Remove(tmpFile.Name()) // Clean up the temporary file
@@ -55,7 +58,8 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	_, err = tmpFile.Write(code)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Failed to write code to temporary file: %v", err)
+		fmt.Fprintf(w, "Internal server error", err)
+		log.Printf("Failed to write code to temporary file: %v", err)
 		return
 	}
 
@@ -63,18 +67,24 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	err = tmpFile.Close()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Failed to close temporary file: %v", err)
+		fmt.Fprintf(w, "Internal server error", err)
+		log.Printf("Failed to close temporary file: %v", err)
 		return
 	}
 
-	// Compile the code using GCC (assuming GCC is installed)
-	outputFile := filepath.Join(filepath.Dir(tmpFile.Name()), "output")
-	cmd := exec.Command("gcc", tmpFile.Name(), "-o", outputFile)
-
-	// Create a new syscall.SysProcAttr and set its Ptrace to false
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-		Ptrace: false,
+	// Create a temporary file to store the output
+	tmpOpFile, err := ioutil.TempFile("", "output-*.c")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Internal server error", err)
+		log.Printf("Failed to create output temporary file: %v\n", err)
+		return
 	}
+	defer os.Remove(tmpOpFile.Name()) // Clean up the temporary file
+
+	// Compile the code using GCC (assuming GCC is installed)
+	outputFile := filepath.Join(filepath.Dir(tmpFile.Name()), tmpOpFile.Name())
+	cmd := exec.Command("gcc", tmpFile.Name(), "-o", outputFile)
 
 	compilerOutput, err := cmd.CombinedOutput()
 	if err != nil {
@@ -126,4 +136,3 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		w.Write(output)
 	}
 }
-
