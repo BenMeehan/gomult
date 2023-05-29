@@ -64,7 +64,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a temporary file to store the code
-	tmpFile, err := ioutil.TempFile("", "code-*.c")
+	tmpFile, err := ioutil.TempFile("", "code-*.cpp")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Internal server error", err)
