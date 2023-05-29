@@ -30,5 +30,4 @@ RUN go build -o app .
 
 EXPOSE 8080
 
-CMD ["./app"]
-
+CMD ["bash", "-c", "export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ./app"]
