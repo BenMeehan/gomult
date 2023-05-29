@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -19,6 +21,11 @@ const MaxCodeSize = 1024 * 1024 // 1 MB
 const RestrictedUserID = 1000
 const RestrictedGroupID = 1000
 
+type CompileRequest struct {
+	Code  string `json:"code"`
+	Input string `json:"input"`
+}
+
 func main() {
 	http.HandleFunc("/compile", handleCompile)
 	fmt.Println("C Server listening on port 8080...")
@@ -26,14 +33,26 @@ func main() {
 }
 
 func handleCompile(w http.ResponseWriter, r *http.Request) {
-	// Read the code from the HTTP request body
-	code, err := ioutil.ReadAll(r.Body)
+	// Read the request body
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error occurred during parsing of the code", err)
-		log.Printf("Failed to read code from request body: %v", err)
+		fmt.Fprint(w, "Error occurred during parsing of the request body", err)
+		log.Printf("Failed to read request body: %v", err)
 		return
 	}
+
+	// Parse the JSON request body
+	var compileReq CompileRequest
+	err = json.Unmarshal(body, &compileReq)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprint(w, "Error occurred during parsing of the JSON request body", err)
+		log.Printf("Failed to parse JSON request body: %v", err)
+		return
+	}
+
+	code := []byte(compileReq.Code)
 
 	// Check if the code size exceeds the maximum allowed size
 	if len(code) > MaxCodeSize {
@@ -121,6 +140,9 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 				Gid: RestrictedGroupID,
 			},
 		}
+
+		// Set the input for the program
+		cmd.Stdin = strings.NewReader(compileReq.Input)
 
 		cmdOutput, err := cmd.CombinedOutput()
 		if err != nil {
