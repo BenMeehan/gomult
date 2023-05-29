@@ -29,7 +29,7 @@ type CompileRequest struct {
 
 func main() {
 	http.HandleFunc("/compile", handleCompile)
-	fmt.Println("C Server listening on port 8080...")
+	fmt.Println("C++ Server listening on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -100,9 +100,9 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Compile the code using GCC
+	// Compile the code using G++
 	outputFile := tmpOpFile.Name()
-	cmd := exec.Command("gcc", tmpFile.Name(), "-o", outputFile)
+	cmd := exec.Command("g++", tmpFile.Name(), "-o", outputFile)
 
 	compilerOutput, err := cmd.CombinedOutput()
 	if err != nil {
