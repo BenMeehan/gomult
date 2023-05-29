@@ -16,10 +16,14 @@ RUN adduser restricteduser
 RUN chmod go-wrx /app /bin /boot /dev /etc /go /home /media /mnt /opt /proc /root /run /sbin /srv /usr /var
 
 # Set permissions for /lib and /lib64
-RUN chmod go+x-wr /lib /lib64
+RUN chmod go+x-wr /lib /lib64 /usr
 
 # Set permissions for /tmp
 RUN chmod go+x-wr /tmp
+
+# C++ expects shared libs in /usr/lib. Remove all other permissions
+
+RUN chmod go-x /usr/bin /usr/games /usr/include /usr/libexec /usr/local /usr/sbin /usr/share /usr/src
 
 # Initialize Go modules
 RUN go mod init github.com/benmeehan/code-online/c-compiler
@@ -30,4 +34,5 @@ RUN go build -o app .
 
 EXPOSE 8080
 
-CMD ["bash", "-c", "export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ./app"]
+CMD ["./app"]
+
