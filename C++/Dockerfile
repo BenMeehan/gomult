@@ -22,7 +22,6 @@ RUN chmod go+x-wr /lib /lib64 /usr
 RUN chmod go+x-wr /tmp
 
 # C++ expects shared libs in /usr/lib. Remove all other permissions
-
 RUN chmod go-x /usr/bin /usr/games /usr/include /usr/libexec /usr/local /usr/sbin /usr/share /usr/src
 
 # Initialize Go modules
