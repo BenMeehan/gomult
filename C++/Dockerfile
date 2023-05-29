@@ -2,6 +2,11 @@ FROM golang:latest
 
 WORKDIR /app
 
+# Install required libraries for C++ compilation
+RUN apt-get update && \
+    apt-get install -y build-essential && \
+    apt-get install -y libstdc++6
+
 COPY . .
 
 # Create a restricted user
