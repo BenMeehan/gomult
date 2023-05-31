@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -29,7 +28,7 @@ type CompileRequest struct {
 
 func main() {
 	http.HandleFunc("/compile", handleCompile)
-	fmt.Println("C++ Server listening on port 8080...")
+	fmt.Println("Python Server listening on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -64,7 +63,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a temporary file to store the code
-	tmpFile, err := ioutil.TempFile("", "code-*.cpp")
+	tmpFile, err := ioutil.TempFile("", "code-*.py")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Internal server error", err)
@@ -91,38 +90,6 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create a temporary file to store the output
-	tmpOpFile, err := ioutil.TempFile("", "output-*")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Internal server error", err)
-		log.Printf("Failed to create output temporary file: %v\n", err)
-		return
-	}
-
-	// Compile the code using G++
-	outputFile := tmpOpFile.Name()
-	cmd := exec.Command("g++", tmpFile.Name(), "-o", outputFile)
-
-	compilerOutput, err := cmd.CombinedOutput()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Compilation error: %s", compilerOutput)
-		log.Printf("Compilation error: %s", err)
-		return
-	}
-
-	log.Printf("Compilation successful. Output file: %s", outputFile)
-
-	// Close the temporary output file
-	err = tmpOpFile.Close()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Internal server error", err)
-		log.Printf("Failed to close output temporary file: %v", err)
-		return
-	}
-
 	// Create a context with a timeout duration
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -130,9 +97,9 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	// Create a channel to receive the output
 	outputChannel := make(chan []byte)
 
-	// Run the compiled output in a Goroutine and monitor for timeouts
+	// Run the Python code in a Goroutine and monitor for timeouts
 	go func() {
-		cmd := exec.CommandContext(ctx, outputFile)
+		cmd := exec.CommandContext(ctx, "python3", tmpFile.Name())
 
 		// Set the user and group ID of the executed program
 		cmd.SysProcAttr = &syscall.SysProcAttr{
@@ -142,9 +109,6 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 			},
 		}
 
-		// Set the input for the program
-		cmd.Stdin = strings.NewReader(compileReq.Input)
-
 		cmdOutput, err := cmd.CombinedOutput()
 		if err != nil {
 			log.Printf("Execution error: %s", err)
@@ -153,9 +117,6 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		// Send the execution output through the channel
 		outputChannel <- cmdOutput
 	}()
-
-	// Remove the temporary output file after the Goroutine completes
-	defer os.Remove(tmpOpFile.Name())
 
 	select {
 	case <-ctx.Done():
