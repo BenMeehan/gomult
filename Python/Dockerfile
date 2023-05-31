@@ -13,7 +13,7 @@ COPY . .
 RUN adduser restricteduser
 
 # Set permissions for directories excluding /lib, /lib64, and /tmp
-RUN chmod go-wrx /app /bin /boot /dev /etc /go /home /media /mnt /opt /proc /root /run /sbin /srv /usr /var
+# RUN chmod go-wrx /app /bin /boot /dev /etc /go /home /media /mnt /opt /proc /root /run /sbin /srv /usr /var
 
 # Set permissions for /lib and /lib64
 RUN chmod go+x-wr /lib /lib64 /usr
