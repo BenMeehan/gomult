@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"syscall"
 	"time"
@@ -70,6 +71,15 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// defer os.Remove(tmpFile.Name()) // Clean up the temporary file
+
+	// Set the desired permissions for the temporary file
+	err = os.Chmod(tmpFile.Name(), 0777) // For example, sets read permissions for everyone
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Internal server error", err)
+		log.Printf("Failed to create temporary file: %v", err)
+		return
+	}
 
 	// Write the code to the temporary file
 	_, err = tmpFile.Write(code)
