@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"os/exec"
 	"syscall"
 	"time"
@@ -70,7 +69,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Failed to create temporary file: %v", err)
 		return
 	}
-	defer os.Remove(tmpFile.Name()) // Clean up the temporary file
+	// defer os.Remove(tmpFile.Name()) // Clean up the temporary file
 
 	// Write the code to the temporary file
 	_, err = tmpFile.Write(code)
