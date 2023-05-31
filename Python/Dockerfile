@@ -16,13 +16,13 @@ RUN adduser restricteduser
 # RUN chmod go-wrx /app /bin /boot /dev /etc /go /home /media /mnt /opt /proc /root /run /sbin /srv /usr /var
 
 # Set permissions for /lib and /lib64
-RUN chmod go+x-wr /lib /lib64 /usr
+# RUN chmod go+x-wr /lib /lib64 /usr
 
 # Set permissions for /tmp
 # RUN chmod go+xr-w /tmp
 
 # Python binary is in /usr/bin. Remove all other permissions
-RUN chmod go-x /usr/games /usr/include /usr/libexec /usr/local /usr/sbin /usr/share /usr/src
+# RUN chmod go-x /usr/games /usr/include /usr/libexec /usr/local /usr/sbin /usr/share /usr/src
 
 # Initialize Go modules
 RUN go mod init github.com/benmeehan/code-online/python-compiler
