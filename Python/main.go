@@ -73,11 +73,11 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	// defer os.Remove(tmpFile.Name()) // Clean up the temporary file
 
 	// Set the desired permissions for the temporary file
-	err = os.Chmod(tmpFile.Name(), 0040) // For example, sets read permissions for everyone
+	err = os.Chmod(tmpFile.Name(), 0050)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Internal server error", err)
-		log.Printf("Failed to create temporary file: %v", err)
+		log.Printf("Failed to set permissions for temporary file: %v", err)
 		return
 	}
 
