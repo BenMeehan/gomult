@@ -19,7 +19,7 @@ RUN adduser restricteduser
 RUN chmod go+x-wr /lib /lib64 /usr
 
 # Set permissions for /tmp
-RUN chmod go+xr-w /tmp
+# RUN chmod go+xr-w /tmp
 
 # Python binary is in /usr/bin. Remove all other permissions
 RUN chmod go-x /usr/games /usr/include /usr/libexec /usr/local /usr/sbin /usr/share /usr/src
