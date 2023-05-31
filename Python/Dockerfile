@@ -19,10 +19,10 @@ RUN chmod go-wrx /app /bin /boot /dev /etc /go /home /media /mnt /opt /proc /roo
 RUN chmod go+x-wr /lib /lib64 /usr
 
 # Set permissions for /tmp
-RUN chmod go+x-wr /tmp
+RUN chmod go+xr-w /tmp
 
 # Python binary is in /usr/bin. Remove all other permissions
-# RUN chmod go-x /usr/games /usr/include /usr/libexec /usr/local /usr/sbin /usr/share /usr/src
+RUN chmod go-x /usr/games /usr/include /usr/libexec /usr/local /usr/sbin /usr/share /usr/src
 
 # Initialize Go modules
 RUN go mod init github.com/benmeehan/code-online/python-compiler
