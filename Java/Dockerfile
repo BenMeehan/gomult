@@ -3,6 +3,7 @@ FROM golang:latest
 WORKDIR /app
 
 # Install Java Development Kit (JDK)
+USER root
 RUN apt-get update && \
     apt-get install -y default-jdk
 
@@ -19,9 +20,6 @@ RUN chmod go+x-wr /tmp
 
 # Java bin is in /usr/bin and expects shared libs in /usr/lib. Remove all other permissions
 RUN chmod go-x /usr/games /usr/include /usr/libexec /usr/local /usr/sbin /usr/share /usr/src
-
-# Give execute permissions to the java command
-RUN chmod +x /usr/bin/java
 
 # Initialize Go modules
 RUN go mod init github.com/benmeehan/code-online/java-compiler
