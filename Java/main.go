@@ -75,7 +75,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	// defer os.RemoveAll(tempDir) // Clean up the temporary directory
 
 	// Create a temporary file to store the code
-	filePath := fmt.Sprintf("/tmp/%s/%s", tempDir, "Main.java")
+	filePath := fmt.Sprintf("%s/%s", tempDir, "Main.java")
 	tmpFile, err := os.Create(filePath)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
