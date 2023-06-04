@@ -20,8 +20,11 @@ RUN chmod go+x-wr /tmp
 # Java bin is in /usr/bin and expects shared libs in /usr/lib. Remove all other permissions
 RUN chmod go-x /usr/games /usr/include /usr/libexec /usr/local /usr/sbin /usr/share /usr/src
 
+# Give execute permissions to the java command
+RUN chmod +x /usr/bin/java
+
 # Initialize Go modules
-RUN go mod init github.com/benmeehan/code-online/c-compiler
+RUN go mod init github.com/benmeehan/code-online/java-compiler
 
 RUN go mod tidy
 
