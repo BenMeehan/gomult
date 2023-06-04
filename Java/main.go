@@ -65,14 +65,15 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a temporary directory for the user
-	tempDir, err := ioutil.TempDir("/tmp", "user-*")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Internal server error", err)
-		log.Printf("Failed to create temporary directory: %v", err)
-		return
-	}
+	// tempDir, err := ioutil.TempDir("/tmp", "user-*")
+	// if err != nil {
+	// 	w.WriteHeader(http.StatusInternalServerError)
+	// 	fmt.Fprintf(w, "Internal server error", err)
+	// 	log.Printf("Failed to create temporary directory: %v", err)
+	// 	return
+	// }
 	// defer os.RemoveAll(tempDir) // Clean up the temporary directory
+	tempDir := "/tmp"
 
 	// Create a temporary file to store the code
 	filePath := fmt.Sprintf("%s/%s", tempDir, "Main.java")
@@ -83,7 +84,6 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Failed to create temporary file: %v", err)
 		return
 	}
-	// defer os.Remove(tmpFile.Name()) // Clean up the temporary file
 
 	// Write the code to the temporary file
 	_, err = tmpFile.Write(code)
@@ -103,17 +103,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create a temporary file to store the output
-	tmpOpFile, err := ioutil.TempFile(tempDir, "output-*")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Internal server error", err)
-		log.Printf("Failed to create output temporary file: %v\n", err)
-		return
-	}
-
 	// Compile the code using Java compiler (javac)
-	outputFile := tmpOpFile.Name()
 	cmd := exec.Command("javac", "-d", tempDir, tmpFile.Name())
 
 	compilerOutput, err := cmd.CombinedOutput()
@@ -124,16 +114,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Compilation successful. Output file: %s", outputFile)
-
-	// Close the temporary output file
-	err = tmpOpFile.Close()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Internal server error", err)
-		log.Printf("Failed to close output temporary file: %v", err)
-		return
-	}
+	log.Printf("Compilation successful. Output file: %s", "Main.class")
 
 	// Create a context with a timeout duration
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -168,9 +149,6 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		// Send the execution output through the channel
 		outputChannel <- cmdOutput
 	}()
-
-	// Remove the temporary output file after the Goroutine completes
-	defer os.Remove(tmpOpFile.Name())
 
 	select {
 	case <-ctx.Done():

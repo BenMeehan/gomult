@@ -3,7 +3,6 @@ FROM golang:latest
 WORKDIR /app
 
 # Install Java Development Kit (JDK)
-USER root
 RUN apt-get update && \
     apt-get install -y default-jdk
 
