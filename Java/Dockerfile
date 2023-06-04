@@ -29,6 +29,7 @@ RUN go build -o app .
 
 EXPOSE 8080
 
-USER restricteduser
+# USER restricteduser
+
 
 CMD ["./app"]
