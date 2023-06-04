@@ -8,14 +8,21 @@ RUN apt-get update && \
 
 COPY . .
 
+
 # Set permissions for directories excluding /lib, /lib64, and /tmp
 RUN chmod go-wrx /app /bin /boot /dev /etc /go /home /media /mnt /opt /proc /root /run /sbin /srv /usr /var
 
 # Set permissions for /lib and /lib64
-RUN chmod go+x-wr /lib /lib64 /usr /etc
+RUN chmod go+x-wr /lib /lib64 /usr
 
 # Set permissions for /tmp
 RUN chmod go+x-wr /tmp
+
+# Give execute permission to /etc
+RUN chmod +x /etc
+
+# Remove execute permission for all files and folders inside /etc except /etc/alternatives
+RUN find /etc -type f ! -path '/etc/alternatives/*' -exec chmod -x {} +
 
 # Java bin is in /usr/bin and expects shared libs in /usr/lib. Remove all other permissions
 RUN chmod go-x /usr/games /usr/include /usr/libexec /usr/local /usr/sbin /usr/share /usr/src
