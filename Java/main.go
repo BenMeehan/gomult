@@ -72,17 +72,17 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Failed to create temporary directory: %v", err)
 		return
 	}
-	defer os.RemoveAll(tempDir) // Clean up the temporary directory
+	// defer os.RemoveAll(tempDir) // Clean up the temporary directory
 
 	// Create a temporary file to store the code
-	tmpFile, err := ioutil.TempFile(tempDir, "code-*.java")
+	tmpFile, err := ioutil.TempFile(tempDir, "Main.java")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Internal server error", err)
 		log.Printf("Failed to create temporary file: %v", err)
 		return
 	}
-	defer os.Remove(tmpFile.Name()) // Clean up the temporary file
+	// defer os.Remove(tmpFile.Name()) // Clean up the temporary file
 
 	// Write the code to the temporary file
 	_, err = tmpFile.Write(code)
