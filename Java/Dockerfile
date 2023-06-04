@@ -9,13 +9,13 @@ RUN apt-get update && \
 COPY . .
 
 # Set permissions for directories excluding /lib, /lib64, and /tmp
-RUN chmod go-wrx /app /bin /boot /dev /etc /go /home /media /mnt /opt /proc /root /run /sbin /srv /usr /var
+# RUN chmod go-wrx /app /bin /boot /dev /etc /go /home /media /mnt /opt /proc /root /run /sbin /srv /usr /var
 
 # Set permissions for /lib and /lib64
-RUN chmod go+x-wr /lib /lib64 /usr
+# RUN chmod go+x-wr /lib /lib64 /usr
 
 # Set permissions for /tmp
-RUN chmod go+x-wr /tmp
+# RUN chmod go+x-wr /tmp
 
 # Java bin is in /usr/bin and expects shared libs in /usr/lib. Remove all other permissions
 # RUN chmod go-xr /usr/games /usr/include /usr/libexec /usr/local /usr/sbin /usr/share /usr/src
