@@ -13,19 +13,10 @@ COPY . .
 RUN chmod go-wrx /app /bin /boot /dev /etc /go /home /media /mnt /opt /proc /root /run /sbin /srv /usr /var
 
 # Set permissions for /lib and /lib64
-RUN chmod go+x-wr /lib /lib64 /usr
+RUN chmod go+x-wr /lib /lib64 /usr /etc
 
 # Set permissions for /tmp
 RUN chmod go+x-wr /tmp
-
-# Give execute permission to /etc
-RUN chmod +x /etc
-
-# Remove execute permission for all files inside /etc except /etc/alternatives
-RUN find /etc -type f ! -path '/etc/alternatives/*' -exec chmod -x {} \;
-
-# Remove execute permission for all directories inside /etc except /etc/alternatives
-RUN find /etc -type d ! -path '/etc/alternatives' -exec chmod -x {} \;
 
 # Java bin is in /usr/bin and expects shared libs in /usr/lib. Remove all other permissions
 RUN chmod go-x /usr/games /usr/include /usr/libexec /usr/local /usr/sbin /usr/share /usr/src
