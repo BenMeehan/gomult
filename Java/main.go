@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"syscall"
 	"time"
@@ -63,8 +64,18 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create a temporary directory for the user
+	tempDir, err := ioutil.TempDir("/tmp", "user-*")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Internal server error", err)
+		log.Printf("Failed to create temporary directory: %v", err)
+		return
+	}
+	defer os.RemoveAll(tempDir) // Clean up the temporary directory
+
 	// Create a temporary file to store the code
-	tmpFile, err := ioutil.TempFile("", "code-*.java")
+	tmpFile, err := ioutil.TempFile(tempDir, "code-*.java")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Internal server error", err)
@@ -92,7 +103,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a temporary file to store the output
-	tmpOpFile, err := ioutil.TempFile("", "output-*")
+	tmpOpFile, err := ioutil.TempFile(tempDir, "output-*")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Internal server error", err)
@@ -102,7 +113,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 
 	// Compile the code using Java compiler (javac)
 	outputFile := tmpOpFile.Name()
-	cmd := exec.Command("javac", tmpFile.Name())
+	cmd := exec.Command("javac", "-d", tempDir, tmpFile.Name())
 
 	compilerOutput, err := cmd.CombinedOutput()
 	if err != nil {
@@ -132,7 +143,10 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 
 	// Run the compiled output in a Goroutine and monitor for timeouts
 	go func() {
-		cmd := exec.CommandContext(ctx, "java", "-cp", ".", "Main")
+		// Get the name of the main class file
+		mainClass := strings.TrimSuffix(filepath.Base(tmpFile.Name()), ".java")
+
+		cmd := exec.CommandContext(ctx, "java", "-cp", tempDir, mainClass)
 
 		// Set the user and group ID of the executed program
 		cmd.SysProcAttr = &syscall.SysProcAttr{
