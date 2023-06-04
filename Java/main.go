@@ -65,15 +65,14 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a temporary directory for the user
-	// tempDir, err := ioutil.TempDir("/tmp", "user-*")
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	fmt.Fprintf(w, "Internal server error", err)
-	// 	log.Printf("Failed to create temporary directory: %v", err)
-	// 	return
-	// }
-	// defer os.RemoveAll(tempDir) // Clean up the temporary directory
-	tempDir := "/tmp"
+	tempDir, err := ioutil.TempDir("/tmp", "user-*")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Internal server error", err)
+		log.Printf("Failed to create temporary directory: %v", err)
+		return
+	}
+	defer os.RemoveAll(tempDir) // Clean up the temporary directory
 
 	// Create a temporary file to store the code
 	filePath := fmt.Sprintf("%s/%s", tempDir, "Main.java")
