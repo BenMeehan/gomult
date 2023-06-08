@@ -28,7 +28,7 @@ type CompileRequest struct {
 
 func main() {
 	http.HandleFunc("/compile", handleCompile)
-	fmt.Println("Python Server listening on port 8080...")
+	fmt.Println("Go Server listening on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
@@ -63,14 +63,14 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create a temporary file to store the code
-	tmpFile, err := ioutil.TempFile("", "code-*.py")
+	tmpFile, err := ioutil.TempFile("", "code-*.go")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Internal server error", err)
 		log.Printf("Failed to create temporary file: %v", err)
 		return
 	}
-	defer os.Remove(tmpFile.Name()) // Clean up the temporary file
+	// defer os.Remove(tmpFile.Name()) // Clean up the temporary file
 
 	// Set the desired permissions for the temporary file
 	err = os.Chmod(tmpFile.Name(), 100)
@@ -108,7 +108,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 
 	// Run the Python code in a Goroutine and monitor for timeouts
 	go func() {
-		cmd := exec.CommandContext(ctx, "python", tmpFile.Name())
+		cmd := exec.CommandContext(ctx, "go", "run", tmpFile.Name())
 
 		// Set the user and group ID of the executed program
 		cmd.SysProcAttr = &syscall.SysProcAttr{

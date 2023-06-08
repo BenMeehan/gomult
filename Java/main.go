@@ -30,7 +30,7 @@ type CompileRequest struct {
 
 func main() {
 	http.HandleFunc("/compile", handleCompile)
-	fmt.Println("Server listening on port 8080...")
+	fmt.Println("Java Server listening on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
