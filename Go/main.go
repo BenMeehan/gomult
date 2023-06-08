@@ -70,7 +70,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Failed to create temporary file: %v", err)
 		return
 	}
-	// defer os.Remove(tmpFile.Name()) // Clean up the temporary file
+	defer os.Remove(tmpFile.Name()) // Clean up the temporary file
 
 	// Set the desired permissions for the temporary file
 	err = os.Chmod(tmpFile.Name(), 100)
