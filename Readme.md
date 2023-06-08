@@ -2,6 +2,10 @@
 
 This project provides a compilation and execution service for multiple programming languages. It allows you to submit code snippets in various languages and receive the corresponding output.
 
+For demo API's please look at [API Readme](./Api.md)
+
+Thank you [Render](https://render.com/) for your free services.
+
 ## Features
 
 - Supports multiple programming languages
