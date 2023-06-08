@@ -9,9 +9,6 @@ RUN apt-get update && \
 
 COPY . .
 
-# Create a restricted user
-RUN adduser restricteduser
-
 # Set permissions for directories excluding /lib, /lib64, and /tmp
 RUN chmod go-wrx /app /bin /boot /dev /etc /go /home /media /mnt /opt /proc /root /run /sbin /srv /usr /var
 
