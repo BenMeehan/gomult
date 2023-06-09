@@ -87,6 +87,8 @@ The service currently supports the following programming languages:
 - Python 3
 - Python 2.7
 - Java 11
+- Golang
+- Rust
 - more to be added soon...
 
 You can extend the service to support additional languages by adding the corresponding code compilation and execution logic.
