@@ -118,6 +118,9 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 			},
 		}
 
+		// Set the input for the program
+		cmd.Stdin = strings.NewReader(compileReq.Input)
+
 		cmdOutput, err := cmd.CombinedOutput()
 		if err != nil {
 			log.Printf("Execution error: %s", err)
