@@ -60,6 +60,18 @@ Send a POST request to this endpoint to compile and execute code.
 - **language:** The programming language of the code snippet.
 
 
+**Make a post request to this URL(https://load-balancer-1l8h.onrender.com) to test it out.**
+
+*Example curl request*
+
+```
+curl -X POST -H "Content-Type: application/json" -d '{
+  "code": "print(\"Hello, World!\")",
+  "input": "",
+  "language": "py"
+}' https://load-balancer-1l8h.onrender.com/compile
+```
+
 ### Response Format:
 
 If the compilation and execution are successful within the timeout duration, the API will respond with the output of the program.
