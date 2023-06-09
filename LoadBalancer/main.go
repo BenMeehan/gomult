@@ -20,6 +20,7 @@ type CompileRequest struct {
 
 type LoadBalancer struct {
 	LanguageServers map[string][]string
+	NextServerIndex map[string]int
 }
 
 func (lb *LoadBalancer) handleCompile(w http.ResponseWriter, r *http.Request) {
@@ -53,9 +54,17 @@ func (lb *LoadBalancer) handleCompile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Select a server from the list (using a simple round-robin strategy)
-	serverURL := servers[0]
+	// Get the next server index from the map
+	nextServerIndex := lb.NextServerIndex[compileReq.Language]
+	if nextServerIndex >= len(servers) {
+		nextServerIndex = 0 // Reset to the first server if index exceeds the server list size
+	}
+	serverURL := servers[nextServerIndex]
 
+	// Update the next server index for the language
+	lb.NextServerIndex[compileReq.Language] = (nextServerIndex + 1) % len(servers)
+
+	// Parse the server URL
 	u, err := url.Parse(serverURL)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -65,8 +74,13 @@ func (lb *LoadBalancer) handleCompile(w http.ResponseWriter, r *http.Request) {
 	}
 	u.Path = "/compile"
 
-	// Proxy the request to the selected server URL
-	proxy := httputil.NewSingleHostReverseProxy(u)
+	// Create a reverse proxy with a custom Director function
+	proxy := &httputil.ReverseProxy{Director: func(req *http.Request) {
+		req.URL.Scheme = u.Scheme
+		req.URL.Host = u.Host
+		req.URL.Path = u.Path
+		req.Host = u.Host
+	}}
 	proxy.ServeHTTP(w, r)
 }
 
@@ -76,7 +90,8 @@ func main() {
 	var s smpl.Configuration
 	s.InitializeFromFile("./urls.smpl")
 
-	lb.LanguageServers=s.Geta
+	lb.LanguageServers = s.Geta
+	lb.NextServerIndex = make(map[string]int)
 
 	http.HandleFunc("/compile", lb.handleCompile)
 	fmt.Println("Load Balancer listening on port 8080...")
