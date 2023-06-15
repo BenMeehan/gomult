@@ -108,4 +108,5 @@ Contributions are welcome! If you would like to contribute to this project, plea
 This project is licensed under the [Apache License](./LICENSE)
 
 ## Contact 
-For any inquiries or support, please contact benmeehan111@example.com.
+For any inquiries or support, please contact benmeehan111@gmail.com
+
