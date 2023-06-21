@@ -93,7 +93,26 @@ func main() {
 	lb.LanguageServers = s.Geta
 	lb.NextServerIndex = make(map[string]int)
 
+	ticker := time.NewTicker(14 * time.Minute)
+	go pingServers(lb.LanguageServers,ticker)
+
 	http.HandleFunc("/compile", lb.handleCompile)
 	fmt.Println("Load Balancer listening on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func pingServers(servers map[string][string], ticker *time.ticker){
+	// Ping the servers periodically to see if they are alive
+	for {
+		select {
+		case <-ticker.C:
+			for k,v:=range servers{
+				_, err := http.Get(v)
+				if err != nil {
+					fmt.Printf("Error pinging %s server with url %s: %v\n", k, v, err)
+					return
+				}
+			}
+		}
+	}
 }
