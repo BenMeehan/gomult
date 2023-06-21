@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"net/http/httputil"
+	"time"
 	smpl "github.com/benmeehan/go-smpl"
 )
 
@@ -101,16 +102,18 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func pingServers(servers map[string][string], ticker *time.ticker){
+func pingServers(servers map[string][]string, ticker *time.Ticker){
 	// Ping the servers periodically to see if they are alive
 	for {
 		select {
 		case <-ticker.C:
-			for k,v:=range servers{
-				_, err := http.post(v)
-				if err != nil {
-					fmt.Printf("Error pinging %s server with url %s: %v\n", k, v, err)
-					return
+			for k, v := range servers {
+				for _, url := range v {
+					_, err := http.Get(url)
+					if err != nil {
+						fmt.Printf("Error pinging %s server with url %s: %v\n", k, url, err)
+						return
+					}
 				}
 			}
 		}
