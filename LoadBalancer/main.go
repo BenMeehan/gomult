@@ -107,7 +107,7 @@ func pingServers(servers map[string][string], ticker *time.ticker){
 		select {
 		case <-ticker.C:
 			for k,v:=range servers{
-				_, err := http.Get(v)
+				_, err := http.post(v)
 				if err != nil {
 					fmt.Printf("Error pinging %s server with url %s: %v\n", k, v, err)
 					return
