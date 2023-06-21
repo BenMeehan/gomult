@@ -1,0 +1,13 @@
+name: Ping URL every 10 minutes
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+
+jobs:
+  ping_url:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping URL
+        run: curl -sS "https://load-balancer-1l8h.onrender.com/compile" -o /dev/null
