@@ -122,6 +122,18 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		// Set the input for the program
 		cmd.Stdin = strings.NewReader(compileReq.Input)
 
+		// Set the memory limit for the process
+		rlimit := &syscall.Rlimit{
+			Cur: 100 * 1024 * 1024, // 100 MB
+			Max: 100 * 1024 * 1024, // 100 MB
+		}
+		err = syscall.Setrlimit(syscall.RLIMIT_AS, rlimit)
+		if err != nil {
+			log.Printf("Failed to set memory limit: %s", err)
+			outputChannel <- []byte("Failed to set memory limit")
+			return
+		}
+
 		cmdOutput, err := cmd.CombinedOutput()
 		if err != nil {
 			log.Printf("Execution error: %s", err)

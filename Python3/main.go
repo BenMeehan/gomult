@@ -9,15 +9,15 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 	"time"
-	"strings"
 )
 
 // Maximum allowed code size in bytes
 const MaxCodeSize = 1024 * 1024 // 1 MB
 
-// Restricted user and group ID - always 1000 for docker unless explicit
+// Restricted user and group ID - always 1000 for Docker unless explicit
 const RestrictedUserID = 1000
 const RestrictedGroupID = 1000
 
@@ -71,7 +71,7 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Failed to create temporary file: %v", err)
 		return
 	}
-	// defer os.Remove(tmpFile.Name()) // Clean up the temporary file
+	defer os.Remove(tmpFile.Name()) // Clean up the temporary file
 
 	// Set the desired permissions for the temporary file
 	err = os.Chmod(tmpFile.Name(), 100)
@@ -121,6 +121,18 @@ func handleCompile(w http.ResponseWriter, r *http.Request) {
 
 		// Set the input for the program
 		cmd.Stdin = strings.NewReader(compileReq.Input)
+
+		// Set the memory limit for the process
+		rlimit := &syscall.Rlimit{
+			Cur: 100 * 1024 * 1024, // 100 MB
+			Max: 100 * 1024 * 1024, // 100 MB
+		}
+		err = syscall.Setrlimit(syscall.RLIMIT_AS, rlimit)
+		if err != nil {
+			log.Printf("Failed to set memory limit: %s", err)
+			outputChannel <- []byte("Failed to set memory limit")
+			return
+		}
 
 		cmdOutput, err := cmd.CombinedOutput()
 		if err != nil {

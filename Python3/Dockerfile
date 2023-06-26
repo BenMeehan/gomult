@@ -13,7 +13,7 @@ COPY . .
 RUN chmod go-wrx /app /bin /boot /dev /etc /go /home /media /mnt /opt /root /run /sbin /srv /usr /var
 
 # Set permissions for /lib and /lib64
-RUN chmod go+x-wr /lib /lib64 /usr
+RUN chmod go+x-wr /lib /usr
 
 # Set permissions for /tmp
 RUN chmod go+x-wr /tmp
