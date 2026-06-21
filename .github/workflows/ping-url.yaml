@@ -1,13 +1,12 @@
-name: Ping URL every 10 minutes
+name: Keep Render service alive
 
 on:
   schedule:
     - cron: "*/10 * * * *"
 
 jobs:
-  ping_url:
+  ping:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Ping URL
-        run: curl -sS "https://load-balancer-1l8h.onrender.com/compile" -o /dev/null
+      - name: Ping health endpoint
+        run: curl -sSf "https://YOUR_RENDER_SERVICE.onrender.com/health" -o /dev/null

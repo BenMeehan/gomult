@@ -1,112 +1,115 @@
-# Code Compilation and Execution Service
+# gomult
 
-This project provides a compilation and execution service for multiple programming languages. It allows you to submit code snippets in various languages and receive the corresponding output.
+Multi-language code compilation and execution service with nsjail sandboxing.
 
-For demo API's please look at [API Readme](./Api.md)
+## Supported Languages (28)
 
-Thank you [Render](https://render.com/) for your free services.
+| Key | Language | Type |
+|-----|----------|------|
+| `asm` | Assembly (NASM x86-64) | Compiled |
+| `c` | C | Compiled |
+| `cpp` | C++ | Compiled |
+| `cs` | C# (Mono) | Compiled |
+| `d` | D | Compiled |
+| `erl` | Erlang | Compiled |
+| `ex` | Elixir | Interpreted |
+| `f90` | Fortran | Compiled |
+| `go` | Go | Compiled |
+| `groovy` | Groovy | Interpreted |
+| `hs` | Haskell | Compiled |
+| `java` | Java | Compiled |
+| `js` | JavaScript | Interpreted |
+| `kt` | Kotlin | Interpreted |
+| `lua` | Lua | Interpreted |
+| `ml` | OCaml | Compiled |
+| `pas` | Pascal | Compiled |
+| `php` | PHP | Interpreted |
+| `pl` | Perl | Interpreted |
+| `pro` | Prolog | Interpreted |
+| `py` | Python 3 | Interpreted |
+| `r` | R | Interpreted |
+| `rb` | Ruby | Interpreted |
+| `rkt` | Racket | Interpreted |
+| `rs` | Rust | Compiled |
+| `scala` | Scala | Compiled |
+| `sh` | Bash | Interpreted |
+| `ts` | TypeScript | Interpreted |
 
 ## Features
 
-- Supports multiple programming languages
-- Secure execution environment with restricted user privileges
-- Handles code compilation and execution
-- Timeout mechanism to prevent long-running executions
+- Single binary, config-driven — add a language with one YAML block
+- nsjail sandbox: network isolation, rlimits (memory, filesize, nproc), user separation
+- Fallback to direct execution when nsjail is unavailable
+- Health check and language listing endpoints
 
+## Quick Start
 
-## Prerequisites
-- Docker: Make sure you have Docker installed on your machine to run the code execution service.
-
-## Getting Started
-
-1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/your-repo.git
+go build -o gomult .
+./gomult
 ```
 
-2. Navigate to the project directory:
+Starts on `http://localhost:8080` in `direct` sandbox mode (no nsjail needed for local dev).
+
+### Docker
+
 ```bash
-cd your-repo
+docker build -t gomult .
+docker run -p 8080:8080 gomult
 ```
 
-3. Build the Docker image:
+The Docker image includes nsjail and all 28 language runtimes.
+
+## API
+
+### `POST /compile`
+
 ```bash
-docker build -t code-execution-service .
-```
-4. Run the Docker container:
-```bash
-docker run -p 8080:8080 code-execution-service
+curl -X POST http://localhost:8080/compile \
+  -H "Content-Type: application/json" \
+  -d '{"code":"print(\"hello\")","input":"","language":"py"}'
 ```
 
-5. The code execution service is now running. You can access it at `http://localhost:8080`.
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `code` | string | yes | Source code |
+| `input` | string | no | Stdin input |
+| `language` | string | yes | Language key (see table) |
 
+Response is `text/plain`. Errors are prefixed: `[COMPILE ERROR]`, `[RUNTIME ERROR]`, `[TIME LIMIT EXCEEDED]`.
 
-## API Usage
-### Endpoint: /compile
+### `GET /health` — `{"status":"ok"}`
 
-Send a POST request to this endpoint to compile and execute code.
+### `GET /languages` — JSON map of language keys to names
 
-### Request Format:
-```json
-{
-  "code": "<code_snippet>",
-  "input": "<input_for_the_program>",
-  "language": "<programming_language>"
-}
+## Configuration
+
+See `config.yaml`. Key settings:
+
+| Setting | Default | Description |
+|---|---|---|
+| `server.port` | 8080 | Listen port |
+| `server.max_code_size` | 1048576 | Max code length (1 MB) |
+| `sandbox.mode` | `auto` | `nsjail`, `direct`, or `auto` |
+| `sandbox.time_limit` | 5 | Timeout (seconds) |
+| `sandbox.max_memory` | 268435456 | Memory limit (256 MB) |
+| `sandbox.max_file_size` | 10485760 | Max file size (10 MB) |
+| `sandbox.max_processes` | 32 | Max processes per run |
+| `sandbox.runtime_user` | 1000 | UID for sandboxed processes |
+
+### Adding a language
+
+```yaml
+languages:
+  zig:
+    name: Zig
+    extension: .zig
+    compile_cmd: [zig, build-exe, "{file}"]
+    run_cmd: ["{output}"]
 ```
 
-- **code:** The code snippet to be compiled and executed.
-- **input:** The input to be provided to the program (optional, depending on the language).
-- **language:** The programming language of the code snippet.
-
-
-**Make a post request to this URL(https://load-balancer-1l8h.onrender.com) to test it out.**
-
-*Example curl request*
-
-```
-curl -X POST -H "Content-Type: application/json" -d '{
-  "code": "print(\"Hello, World!\")",
-  "input": "",
-  "language": "py"
-}' https://load-balancer-1l8h.onrender.com/compile
-```
-
-### Response Format:
-
-If the compilation and execution are successful within the timeout duration, the API will respond with the output of the program.
-
-If an error occurs during compilation or execution, the API will respond with an appropriate error message.
-
-## Supported Languages
-
-The service currently supports the following programming languages:
-
-- C
-- C++
-- Python 3
-- Python 2.7
-- Java 11
-- Javascript
-- Golang
-- Rust
-- more to be added soon...
-
-You can extend the service to support additional languages by adding the corresponding code compilation and execution logic.
-
-## Contributing
-
-Contributions are welcome! If you would like to contribute to this project, please follow these steps:
-
-- Fork the repository.
-- Create a new branch for your feature or bug fix.
-- Make your modifications.
-- Commit your changes and push the branch to your forked repository.
-- Submit a pull request detailing your changes.
+Placeholders: `{file}` (source path), `{output}` (binary path), `{dir}` (work directory). Omit `compile_cmd` for interpreted languages. Set `source_file` to override the written filename (defaults to `code.<ext>`).
 
 ## License
-This project is licensed under the [Apache License](./LICENSE)
 
-## Contact 
-For any inquiries or support, please contact benmeehan111@gmail.com
-
+Apache 2.0 — see [LICENSE](./LICENSE)

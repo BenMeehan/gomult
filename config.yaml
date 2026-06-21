@@ -1,0 +1,147 @@
+server:
+  port: 8080
+  read_timeout: 10s
+  write_timeout: 15s
+  max_code_size: 1048576
+
+sandbox:
+  mode: auto
+  nsjail_path: nsjail
+  time_limit: 5
+  max_memory: 268435456
+  max_file_size: 10485760
+  max_processes: 32
+  runtime_user: 1000
+  runtime_group: 1000
+
+languages:
+  asm:
+    name: Assembly (NASM x86-64)
+    extension: .asm
+    compile_cmd: [sh, -c, "nasm -f elf64 {file} -o {dir}/code.o && ld {dir}/code.o -o {output}"]
+    run_cmd: ["{output}"]
+    source_file: main.asm
+  c:
+    name: C
+    extension: .c
+    compile_cmd: [gcc, -Wall, -O2, "{file}", -o, "{output}"]
+    run_cmd: ["{output}"]
+  cpp:
+    name: C++
+    extension: .cpp
+    compile_cmd: [g++, -Wall, -O2, "{file}", -o, "{output}"]
+    run_cmd: ["{output}"]
+  cs:
+    name: C# (Mono)
+    extension: .cs
+    compile_cmd: [mcs, "-out:{output}", "{file}"]
+    run_cmd: [mono, "{output}"]
+  d:
+    name: D
+    extension: .d
+    compile_cmd: [gdc, -o, "{output}", "{file}"]
+    run_cmd: ["{output}"]
+  erl:
+    name: Erlang
+    extension: .erl
+    compile_cmd: [erlc, "{file}"]
+    run_cmd: [erl, -noshell, -pa, "{dir}", -s, main, start, -s, init, stop]
+    source_file: main.erl
+  ex:
+    name: Elixir
+    extension: .exs
+    run_cmd: [elixir, "{file}"]
+  f90:
+    name: Fortran
+    extension: .f90
+    compile_cmd: [gfortran, -o, "{output}", "{file}"]
+    run_cmd: ["{output}"]
+  go:
+    name: Go
+    extension: .go
+    run_cmd: [go, run, "{file}"]
+    source_file: main.go
+  groovy:
+    name: Groovy
+    extension: .groovy
+    run_cmd: [groovy, "{file}"]
+  hs:
+    name: Haskell
+    extension: .hs
+    compile_cmd: [ghc, -o, "{output}", "{file}"]
+    run_cmd: ["{output}"]
+  java:
+    name: Java
+    extension: .java
+    compile_cmd: [javac, "{file}"]
+    run_cmd: [java, -cp, "{dir}", Main]
+    source_file: Main.java
+  js:
+    name: JavaScript
+    extension: .js
+    run_cmd: [node, "{file}"]
+  kt:
+    name: Kotlin
+    extension: .kts
+    run_cmd: [kotlin, "{file}"]
+  lua:
+    name: Lua
+    extension: .lua
+    run_cmd: [lua5.4, "{file}"]
+  ml:
+    name: OCaml
+    extension: .ml
+    compile_cmd: [ocamlc, -o, "{output}", "{file}"]
+    run_cmd: ["{output}"]
+  pas:
+    name: Pascal
+    extension: .pas
+    compile_cmd: [fpc, "-o{output}", "{file}"]
+    run_cmd: ["{output}"]
+  php:
+    name: PHP
+    extension: .php
+    run_cmd: [php, "{file}"]
+  pl:
+    name: Perl
+    extension: .pl
+    run_cmd: [perl, "{file}"]
+  pro:
+    name: Prolog
+    extension: .pro
+    run_cmd: [swipl, -q, -s, "{file}", -t, halt]
+  py:
+    name: Python 3
+    extension: .py
+    run_cmd: [python3, "{file}"]
+  r:
+    name: R
+    extension: .R
+    run_cmd: [Rscript, "{file}"]
+  rb:
+    name: Ruby
+    extension: .rb
+    run_cmd: [ruby, "{file}"]
+  rkt:
+    name: Racket
+    extension: .rkt
+    run_cmd: [racket, "{file}"]
+  rs:
+    name: Rust
+    extension: .rs
+    compile_cmd: [rustc, -O, "{file}", -o, "{output}"]
+    run_cmd: ["{output}"]
+  scala:
+    name: Scala
+    extension: .scala
+    compile_cmd: [scalac, "{file}"]
+    run_cmd: [scala, -cp, "{dir}", Main]
+    source_file: Main.scala
+  sh:
+    name: Bash
+    extension: .sh
+    run_cmd: [bash, "{file}"]
+  ts:
+    name: TypeScript
+    extension: .ts
+    run_cmd: [ts-node, "{file}"]
