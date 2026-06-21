@@ -15,7 +15,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential pkg-config protobuf-compiler \
     libprotobuf-dev libnl-3-dev libnl-route-3-dev git ca-certificates \
-    curl unzip \
+    flex curl unzip \
     gcc g++ gfortran gdc golang rustc \
     default-jdk scala groovy \
     python3 nodejs npm ruby php-cli \
@@ -38,7 +38,7 @@ RUN git clone --depth 1 https://github.com/google/nsjail.git /tmp/nsjail \
     && cd /tmp/nsjail && make -j"$(nproc)" \
     && cp nsjail /usr/local/bin/ \
     && rm -rf /tmp/nsjail \
-    && apt-get purge -y pkg-config protobuf-compiler libprotobuf-dev git curl unzip \
+    && apt-get purge -y pkg-config protobuf-compiler libprotobuf-dev git curl unzip flex \
     && apt-get autopurge -y \
     && rm -rf /var/lib/apt/lists/*
 

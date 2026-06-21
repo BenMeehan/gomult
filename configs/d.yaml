@@ -1,0 +1,19 @@
+server:
+  port: 8080
+  read_timeout: 10s
+  write_timeout: 15s
+  max_code_size: 1048576
+sandbox:
+  mode: direct
+  time_limit: 5
+  max_memory: 268435456
+  max_file_size: 10485760
+  max_processes: 32
+  runtime_user: 1000
+  runtime_group: 1000
+languages:
+  d:
+    name: D
+    extension: .d
+    compile_cmd: [gdc, -o, "{output}", "{file}"]
+    run_cmd: ["{output}"]
