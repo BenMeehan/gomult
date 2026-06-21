@@ -13,8 +13,8 @@ sandbox:
   runtime_group: 1000
 languages:
   asm:
-    name: Assembly (NASM x86-64)
+    name: Assembly
     extension: .asm
-    compile_cmd: [sh, -c, "nasm -f elf64 {file} -o {dir}/code.o && ld {dir}/code.o -o {output}"]
+    compile_cmd: [sh, -c, "if [ \"$(uname -m)\" = \"x86_64\" ]; then nasm -f elf64 {file} -o {dir}/code.o; else as -o {dir}/code.o {file}; fi && ld {dir}/code.o -o {output}"]
     run_cmd: ["{output}"]
     source_file: main.asm
