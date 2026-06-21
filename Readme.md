@@ -1,114 +1,150 @@
 # gomult
 
-Multi-language code compilation and execution service with nsjail sandboxing.
+Multi-language code compilation and execution service. Single Go binary, per-language Docker images for minimal footprint.
 
-## Supported Languages (28)
+## Languages
 
-| Key | Language | Type |
-|-----|----------|------|
-| `asm` | Assembly (NASM x86-64) | Compiled |
-| `c` | C | Compiled |
-| `cpp` | C++ | Compiled |
-| `cs` | C# (Mono) | Compiled |
-| `d` | D | Compiled |
-| `erl` | Erlang | Compiled |
-| `ex` | Elixir | Interpreted |
-| `f90` | Fortran | Compiled |
-| `go` | Go | Compiled |
-| `groovy` | Groovy | Interpreted |
-| `hs` | Haskell | Compiled |
-| `java` | Java | Compiled |
-| `js` | JavaScript | Interpreted |
-| `kt` | Kotlin | Interpreted |
-| `lua` | Lua | Interpreted |
-| `ml` | OCaml | Compiled |
-| `pas` | Pascal | Compiled |
-| `php` | PHP | Interpreted |
-| `pl` | Perl | Interpreted |
-| `pro` | Prolog | Interpreted |
-| `py` | Python 3 | Interpreted |
-| `r` | R | Interpreted |
-| `rb` | Ruby | Interpreted |
-| `rkt` | Racket | Interpreted |
-| `rs` | Rust | Compiled |
-| `scala` | Scala | Compiled |
-| `sh` | Bash | Interpreted |
-| `ts` | TypeScript | Interpreted |
+### Base (28)
 
-## Features
+| Key | Language | Key | Language | Key | Language | Key | Language |
+|-----|----------|-----|----------|-----|----------|-----|----------|
+| `py` | Python 3 | `js` | JavaScript | `rb` | Ruby | `php` | PHP |
+| `pl` | Perl | `lua` | Lua | `sh` | Bash | `ts` | TypeScript |
+| `ex` | Elixir | `pro` | Prolog | `r` | R | `rkt` | Racket |
+| `groovy` | Groovy | `kt` | Kotlin | `c` | C | `cpp` | C++ |
+| `go` | Go | `java` | Java 17 | `rs` | Rust | `cs` | C# |
+| `d` | D | `hs` | Haskell | `ml` | OCaml | `pas` | Pascal |
+| `f90` | Fortran | `erl` | Erlang | `scala` | Scala | `asm` | Assembly |
 
-- Single binary, config-driven — add a language with one YAML block
-- nsjail sandbox: network isolation, rlimits (memory, filesize, nproc), user separation
-- Fallback to direct execution when nsjail is unavailable
-- Health check and language listing endpoints
+### Versioned
+
+| Image | Language | Runtime |
+|-------|----------|---------|
+| `gomult-py2` | Python 2.7 | Debian bullseye |
+| `gomult-java8` | Java 8 | Adoptium |
+| `gomult-java11` | Java 11 | Adoptium |
+| `gomult-java17` | Java 17 | Adoptium |
+| `gomult-java21` | Java 21 | Adoptium |
+| `gomult-node20` | Node.js 20 | Official binary |
+| `gomult-node22` | Node.js 22 | Official binary |
+
+**35 images total.** Each contains one Go binary + one language runtime.
 
 ## Quick Start
+
+### Per-language Docker (recommended)
+
+```bash
+# Build one language
+docker build -f docker/Dockerfile.py -t gomult-py .
+docker run -p 8080:8080 gomult-py
+
+# Build a versioned language  
+docker build -f docker/Dockerfile.java21 -t gomult-java21 .
+docker run -p 8080:8080 gomult-java21
+```
+
+### All-in-one (28 languages, large image)
+
+```bash
+docker build -t gomult .          # uses root Dockerfile + config.yaml
+docker run -p 8080:8080 gomult
+```
+
+### Local dev (no Docker, requires local runtimes)
 
 ```bash
 go build -o gomult .
 ./gomult
 ```
 
-Starts on `http://localhost:8080` in `direct` sandbox mode (no nsjail needed for local dev).
-
-### Docker
-
-```bash
-docker build -t gomult .
-docker run -p 8080:8080 gomult
-```
-
-The Docker image includes nsjail and all 28 language runtimes.
-
 ## API
 
-### `POST /compile`
+`POST /compile` — JSON in, plain text out.
 
 ```bash
 curl -X POST http://localhost:8080/compile \
   -H "Content-Type: application/json" \
-  -d '{"code":"print(\"hello\")","input":"","language":"py"}'
+  -d '{"code":"print(42)","language":"py"}'
 ```
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `code` | string | yes | Source code |
-| `input` | string | no | Stdin input |
-| `language` | string | yes | Language key (see table) |
+| Field | Required | Description |
+|-------|----------|-------------|
+| `code` | yes | Source code |
+| `input` | no | Stdin for the program |
+| `language` | yes | Language key (see tables above) |
 
-Response is `text/plain`. Errors are prefixed: `[COMPILE ERROR]`, `[RUNTIME ERROR]`, `[TIME LIMIT EXCEEDED]`.
+Successful requests return program output. Errors are prefixed:
+- `[COMPILE ERROR]` — compilation failed
+- `[RUNTIME ERROR]` — non-zero exit code
+- `[TIME LIMIT EXCEEDED]` — execution timed out
 
-### `GET /health` — `{"status":"ok"}`
+`GET /health` → `{"status":"ok"}`  
+`GET /languages` → JSON map of supported keys
 
-### `GET /languages` — JSON map of language keys to names
+## Project Structure
+
+```
+gomult/
+├── main.go                          # Entry point
+├── go.mod / go.sum
+├── config.yaml                      # All-in-one config (28 langs)
+├── Dockerfile                       # All-in-one Dockerfile
+├── internal/
+│   ├── config/config.go             # YAML config loading
+│   ├── sandbox/                     # Execution engine
+│   │   ├── sandbox.go               #   Types + Executor interface
+│   │   ├── engine.go                #   Compile → run orchestration
+│   │   ├── executor_direct.go       #   Direct execution (dev/fallback)
+│   │   └── executor_nsjail.go       #   nsjail sandbox (production)
+│   └── server/server.go             # HTTP handlers
+├── configs/                         # Per-language configs
+│   ├── py.yaml, c.yaml, java.yaml ...
+│   └── py2.yaml, java8.yaml ...     # Version-specific
+└── docker/                          # Per-language Dockerfiles
+    ├── Dockerfile.py, Dockerfile.c ...
+    └── Dockerfile.java21, Dockerfile.node22 ...
+```
 
 ## Configuration
 
-See `config.yaml`. Key settings:
+Per-language configs follow the same format. Key settings:
 
-| Setting | Default | Description |
-|---|---|---|
-| `server.port` | 8080 | Listen port |
-| `server.max_code_size` | 1048576 | Max code length (1 MB) |
-| `sandbox.mode` | `auto` | `nsjail`, `direct`, or `auto` |
-| `sandbox.time_limit` | 5 | Timeout (seconds) |
-| `sandbox.max_memory` | 268435456 | Memory limit (256 MB) |
-| `sandbox.max_file_size` | 10485760 | Max file size (10 MB) |
-| `sandbox.max_processes` | 32 | Max processes per run |
-| `sandbox.runtime_user` | 1000 | UID for sandboxed processes |
+```yaml
+server:
+  port: 8080
+  max_code_size: 1048576          # 1 MB
+sandbox:
+  mode: direct                    # direct | nsjail | auto
+  time_limit: 5                   # seconds
+  max_memory: 268435456           # 256 MB
+  max_file_size: 10485760         # 10 MB
+  max_processes: 32
+languages:
+  py:
+    name: Python 3
+    extension: .py
+    run_cmd: [python3, "{file}"]  # omit compile_cmd for interpreted
+```
 
 ### Adding a language
 
-```yaml
-languages:
-  zig:
-    name: Zig
-    extension: .zig
-    compile_cmd: [zig, build-exe, "{file}"]
-    run_cmd: ["{output}"]
+1. Create `configs/zig.yaml` with a language block
+2. Create `docker/Dockerfile.zig` installing the runtime + copying the config
+
+```dockerfile
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y zig
+COPY --from=builder /app/gomult /usr/local/bin/gomult
+COPY configs/zig.yaml /etc/gomult/config.yaml
+...
 ```
 
-Placeholders: `{file}` (source path), `{output}` (binary path), `{dir}` (work directory). Omit `compile_cmd` for interpreted languages. Set `source_file` to override the written filename (defaults to `code.<ext>`).
+Placeholders in commands: `{file}` (source path), `{output}` (binary path), `{dir}` (work directory).
+
+## Sandbox
+
+Set `sandbox.mode: nsjail` in config for production. Requires nsjail installed in the image. Adds network isolation, cgroup memory limits, and seccomp filtering. Falls back to `direct` mode when nsjail is unavailable.
 
 ## License
 
