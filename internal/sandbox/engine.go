@@ -148,10 +148,17 @@ func (e *Engine) Execute(langKey, code, stdin string) *ExecuteResult {
 	defer cancel()
 
 	result, err := e.executor.Execute(ctx, workDir, runCmd, stdin, e.limits)
-	if err != nil {
+	if err != nil && result.ExitCode == -1 && !result.TimedOut {
+		output := result.Stderr
+		if output == "" {
+			output = result.Stdout
+		}
+		if output == "" {
+			output = err.Error()
+		}
 		return &ExecuteResult{
 			Status: StatusInternalError,
-			Output: fmt.Sprintf("execution error: %v", err),
+			Output: fmt.Sprintf("execution error: %v", output),
 		}
 	}
 
