@@ -1,0 +1,17 @@
+# binary
+gomult
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# temp
+*.out
+*.test

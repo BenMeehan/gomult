@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/benmeehan/gomult/internal/ai"
 	"github.com/benmeehan/gomult/internal/config"
 	"github.com/benmeehan/gomult/internal/sandbox"
 	"github.com/benmeehan/gomult/internal/server"
@@ -16,6 +17,7 @@ import (
 
 func main() {
 	configPath := flag.String("config", "config.yaml", "path to config file")
+	aiKey := flag.String("ai-key", "", "Deepseek API key for AI analysis (or set DEEPSEEK_API_KEY env var)")
 	flag.Parse()
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -31,7 +33,17 @@ func main() {
 		log.Fatalf("failed to create execution engine: %v", err)
 	}
 
-	srv := server.New(cfg, engine)
+	key := *aiKey
+	if key == "" {
+		key = os.Getenv("DEEPSEEK_API_KEY")
+	}
+	var aiClient *ai.Client
+	if key != "" {
+		aiClient = ai.NewClient(key)
+		log.Print("AI analysis enabled (deepseek)")
+	}
+
+	srv := server.New(cfg, engine, aiClient)
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)

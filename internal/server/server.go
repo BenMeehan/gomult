@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/benmeehan/gomult/internal/ai"
 	"github.com/benmeehan/gomult/internal/config"
 	"github.com/benmeehan/gomult/internal/sandbox"
 )
@@ -16,18 +17,21 @@ type compileRequest struct {
 	Code     string `json:"code"`
 	Input    string `json:"input"`
 	Language string `json:"language"`
+	Analyze  bool   `json:"analyze"`
 }
 
 type Server struct {
 	httpServer  *http.Server
 	engine      *sandbox.Engine
+	aiClient    *ai.Client
 	maxBodySize int64
 }
 
-func New(cfg *config.Config, engine *sandbox.Engine) *Server {
+func New(cfg *config.Config, engine *sandbox.Engine, aiClient *ai.Client) *Server {
 	mux := http.NewServeMux()
 	s := &Server{
 		engine:      engine,
+		aiClient:    aiClient,
 		maxBodySize: cfg.Server.MaxCodeSize * 2,
 		httpServer: &http.Server{
 			Addr:         formatAddr(cfg.Server.Port),
@@ -83,6 +87,17 @@ func (s *Server) handleCompile(w http.ResponseWriter, r *http.Request) {
 	log.Printf("compile: lang=%s code_len=%d", req.Language, len(req.Code))
 
 	result := s.engine.Execute(req.Language, req.Code, req.Input)
+
+	if s.aiClient != nil && req.Analyze {
+		log.Printf("ai analysis: lang=%s status=%s", req.Language, result.Status.String())
+		analysis, err := s.aiClient.Analyze(req.Code, req.Language, req.Input, result.Output, result.Status.String())
+		if err != nil {
+			log.Printf("ai analysis failed: %v", err)
+			result.Output += "\n\n[AI ANALYSIS FAILED: " + err.Error() + "]"
+		} else {
+			result.Output += "\n\n[AI ANALYSIS]\n" + analysis
+		}
+	}
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 

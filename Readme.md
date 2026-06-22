@@ -73,6 +73,7 @@ curl -X POST http://localhost:8080/compile \
 | `code` | yes | Source code |
 | `input` | no | Stdin for the program |
 | `language` | yes | Language key (see tables above) |
+| `analyze` | no | Set `true` to get AI analysis via Deepseek (requires `--ai-key` flag or `DEEPSEEK_API_KEY` env var) |
 
 Successful requests return program output. Errors are prefixed:
 - `[COMPILE ERROR]` — compilation failed
@@ -81,6 +82,26 @@ Successful requests return program output. Errors are prefixed:
 
 `GET /health` → `{"status":"ok"}`  
 `GET /languages` → JSON map of supported keys
+
+## AI Analysis
+
+When enabled, the server can send your code and its execution output to Deepseek for analysis. The response includes bug identification, fix suggestions (on errors), or code quality feedback (on success).
+
+```bash
+# Start server with AI enabled
+./gomult --ai-key sk-your-deepseek-key
+# or
+DEEPSEEK_API_KEY=sk-... ./gomult
+```
+
+```bash
+# Request analysis
+curl -X POST http://localhost:8080/compile \
+  -H "Content-Type: application/json" \
+  -d '{"code":"print(1/0)","language":"py","analyze":true}'
+```
+
+The AI analysis appears in the response under `[AI ANALYSIS]`. If the API call fails, the error is logged server-side and `[AI ANALYSIS FAILED]` is returned — the execution result is never blocked.
 
 ## Project Structure
 
@@ -97,7 +118,8 @@ gomult/
 │   │   ├── engine.go                #   Compile → run orchestration
 │   │   ├── executor_direct.go       #   Direct execution (dev/fallback)
 │   │   └── executor_nsjail.go       #   nsjail sandbox (production)
-│   └── server/server.go             # HTTP handlers
+│   ├── ai/ai.go                       # Deepseek analysis client
+│   └── server/server.go               # HTTP handlers
 ├── configs/                         # Per-language configs
 │   ├── py.yaml, c.yaml, java.yaml ...
 │   └── py2.yaml, java8.yaml ...     # Version-specific
@@ -107,6 +129,13 @@ gomult/
 ```
 
 ## Configuration
+
+### CLI flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--config` | `config.yaml` | Path to config file |
+| `--ai-key` | (env `DEEPSEEK_API_KEY`) | Deepseek API key for AI analysis |
 
 Per-language configs follow the same format. Key settings:
 
