@@ -69,3 +69,8 @@ type ExecuteResult struct {
 	Status   Status
 	ExitCode int
 }
+
+type LangInfo struct {
+	Name      string `json:"name"`
+	Extension string `json:"extension"`
+}

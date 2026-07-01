@@ -129,7 +129,11 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleLanguages(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(s.engine.Languages())
+	if r.URL.Query().Get("detail") == "true" {
+		json.NewEncoder(w).Encode(s.engine.LanguagesDetail())
+	} else {
+		json.NewEncoder(w).Encode(s.engine.Languages())
+	}
 }
 
 func formatAddr(port int) string {

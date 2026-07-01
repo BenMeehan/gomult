@@ -77,6 +77,17 @@ func (e *Engine) Languages() map[string]string {
 	return result
 }
 
+func (e *Engine) LanguagesDetail() map[string]LangInfo {
+	result := make(map[string]LangInfo, len(e.languages))
+	for k, v := range e.languages {
+		result[k] = LangInfo{
+			Name:      v.Name,
+			Extension: v.Extension,
+		}
+	}
+	return result
+}
+
 func (e *Engine) Execute(langKey, code, stdin string) *ExecuteResult {
 	lang, ok := e.languages[langKey]
 	if !ok {
